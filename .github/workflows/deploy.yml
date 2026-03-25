@@ -1,0 +1,35 @@
+name: 自动部署到阿里云
+
+on:
+  push:
+    branches: [ master ]  # 只有master推送才触发
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.1'
+
+      - name: 编译 Linux 版本
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o gin-demo
+
+      - name: 上传到阿里云并重启
+        uses: appleboy/ssh-action@master
+        with:
+          host: "47.99.76.213"       # 👈 改这里
+          username: root
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /root/gin-demo
+            # 先上传文件
+            cat > gin-demo < /dev/stdin
+            chmod +x gin-demo
+            # 重启项目
+            pkill -f gin-demo 2>/dev/null
+            nohup ./gin-demo > app.log 2>&1 &
