@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"gin-demo/internal/config"
-	"gin-demo/internal/router"
 	rmq "gin-demo/internal/rabbitmq"
+	"gin-demo/internal/router"
 	"gin-demo/internal/worker"
 
 	"github.com/gin-gonic/gin"
