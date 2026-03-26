@@ -39,8 +39,8 @@ jobs:
           host: 47.99.76.213
           username: root
           key: ${{ secrets.SERVER_SSH_KEY }}
-          timeout: 300s
-          command_timeout: 300s
+          timeout: "300s"
+          command_timeout: "300s"
           script: |
             cd /root/gin-demo
             chmod +x gin-demo
