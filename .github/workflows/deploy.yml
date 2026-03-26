@@ -19,17 +19,31 @@ jobs:
         run: |
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o gin-demo
 
-      - name: 上传到阿里云并重启
-        uses: appleboy/ssh-action@master
+            # 👇 这一步才是真正把文件传到服务器
+      - name: 上传完整项目到阿里云（覆盖更新）
+        uses: appleboy/scp-action@master
         with:
-          host: "47.99.76.213"       # 👈 改这里
+          host: 47.99.76.213
           username: root
           key: ${{ secrets.SERVER_SSH_KEY }}
+          # 上传所有需要的文件/目录，用逗号分隔
+          source: "gin-demo,configs,data,internal,go.mod,go.sum"
+          target: "/root/gin-demo"
+          # 覆盖模式：直接覆盖已存在的文件
+          overwrite: true
+          timeout: 300s
+
+      - name: 重启服务
+        uses: appleboy/ssh-action@master
+        with:
+          host: 47.99.76.213
+          username: root
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          timeout: 300s
+          command_timeout: 300s
           script: |
             cd /root/gin-demo
-            # 先上传文件
-            cat > gin-demo < /dev/stdin
             chmod +x gin-demo
-            # 重启项目
-            pkill -f gin-demo 2>/dev/null
+            pkill -f gin-demo 2>/dev/null || true
             nohup ./gin-demo > app.log 2>&1 &
+            echo "✅ 项目完整部署完成，配置文件已同步更新"
